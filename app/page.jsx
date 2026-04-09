@@ -1,6 +1,7 @@
+"use client";
+
 import { useState, useEffect } from "react";
-import { api } from "../services/api.js";
-import TaskCard from "../components/TaskCard.jsx";
+import TaskCard from "@/components/TaskCard";
 
 export default function Home() {
   const [tasks, setTasks] = useState([]);
@@ -9,10 +10,10 @@ export default function Home() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    api
-      .getTasks()
+    fetch("/api/tasks")
+      .then((res) => res.json())
       .then(setTasks)
-      .catch((err) => setError(err.message))
+      .catch(() => setError("Could not load tasks"))
       .finally(() => setLoading(false));
   }, []);
 
@@ -21,7 +22,13 @@ export default function Home() {
     if (!input.trim()) return;
 
     try {
-      const newTask = await api.createTask(input.trim());
+      const res = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: input.trim() }),
+      });
+      const newTask = await res.json();
+      if (!res.ok) throw new Error(newTask.error);
       setTasks((prev) => [newTask, ...prev]);
       setInput("");
     } catch (err) {
@@ -31,7 +38,13 @@ export default function Home() {
 
   async function handleToggle(id, done) {
     try {
-      const updated = await api.toggleTask(id, done);
+      const res = await fetch(`/api/tasks/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ done }),
+      });
+      const updated = await res.json();
+      if (!res.ok) throw new Error(updated.error);
       setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
     } catch (err) {
       setError(err.message);
@@ -40,7 +53,8 @@ export default function Home() {
 
   async function handleDelete(id) {
     try {
-      await api.deleteTask(id);
+      const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Could not delete task");
       setTasks((prev) => prev.filter((t) => t.id !== id));
     } catch (err) {
       setError(err.message);
@@ -55,8 +69,7 @@ export default function Home() {
 
       {error && (
         <p style={{ color: "red" }}>
-          {error}{" "}
-          <button onClick={() => setError(null)}>Dismiss</button>
+          {error} <button onClick={() => setError(null)}>Dismiss</button>
         </p>
       )}
 
