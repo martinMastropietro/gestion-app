@@ -12,12 +12,14 @@
         └── 📁.venv
         └── 📁modules
             └── 📁gastos
+                ├── __init__.py
+                ├── routes.py
+            └── 📁usuarios
         ├── .env
         ├── app.py
         ├── database.py
         ├── Pipfile
         ├── Pipfile.lock
-        ├── README.md
     └── 📁components
         ├── TaskCard.jsx
     └── 📁lib
@@ -26,5 +28,6 @@
     ├── jsconfig.json
     ├── next.config.js
     ├── package.json
+    ├── Pipfile
     └── README.md
 ```

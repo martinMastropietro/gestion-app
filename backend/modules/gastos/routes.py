@@ -6,27 +6,33 @@ gastos_bp = Blueprint('gastos', __name__)
 @gastos_bp.route('/', methods=['POST'])
 def registrar_gasto():
     data = request.json
+    print(f"DEBUG - Datos recibidos: {data}")
     
-    # diccionario con la estructura completa de la tabla en Supabase
+    if data is None:
+        return jsonify({"status": "error", "message": "No se recibió un JSON válido"}), 400
+
+  
     nuevo_gasto = {
         "descripcion": data.get('descripcion'),
         "monto": data.get('monto'),
-        "fecha_gasto": data.get('fecha_gasto'), # Formato YYYY-MM-DD
+        "fecha_gasto": data.get('fecha_gasto'), 
         "categoria": data.get('categoria'),
-        "estado": data.get('estado', 'Pendiente'), # Valor por defecto
+        "estado": data.get('estado', 'Pendiente'),
         "metodo_pago": data.get('metodo_pago'),
-        "comprobante_url": data.get('comprobante_url'), # URL del storage si existe
-        "unidad_id": data.get('unidad_id') # FK a unidades (puede ser None/null)
+        "comprobante": data.get('comprobante'), 
+        "unidad_id": data.get('unidad_id') 
     }
 
     try:
-        # Validación simple de campos obligatorios
+        # Validación de campos obligatorios
         if not nuevo_gasto["descripcion"] or not nuevo_gasto["monto"]:
             return jsonify({"status": "error", "message": "Descripción y monto son obligatorios"}), 400
 
+     
         res = supabase.table("gastos").insert(nuevo_gasto).execute()
         return jsonify({"status": "success", "data": res.data}), 201
     except Exception as e:
+        print(f"ERROR DETALLADO: {e}") 
         return jsonify({"status": "error", "message": str(e)}), 400
 
 @gastos_bp.route('/unidades-selector', methods=['GET'])
