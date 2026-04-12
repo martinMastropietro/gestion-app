@@ -43,3 +43,35 @@ def obtener_unidades():
         return jsonify(res.data), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+# --- RUTAS NUEVAS PARA EDITAR Y ELIMINAR ---
+
+@gastos_bp.route('/<string:id>', methods=['PUT'])
+def actualizar_gasto(id):
+    """Actualiza un gasto existente usando su ID"""
+    data = request.json
+    try:
+        
+        res = supabase.table("gastos").update(data).eq("id", id).execute()
+        
+       
+        if not res.data:
+            return jsonify({"status": "error", "message": "Gasto no encontrado"}), 404
+            
+        return jsonify({"status": "success", "data": res.data}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+
+@gastos_bp.route('/<string:id>', methods=['DELETE'])
+def eliminar_gasto(id):
+    """Elimina un gasto permanentemente"""
+    try:
+        res = supabase.table("gastos").delete().eq("id", id).execute()
+        
+        if not res.data:
+            return jsonify({"status": "error", "message": "Gasto no encontrado"}), 404
+            
+        return jsonify({"status": "success", "message": "Gasto eliminado exitosamente"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
