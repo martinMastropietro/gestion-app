@@ -1,0 +1,386 @@
+Requerimiento v1
+
+1. Objetivo funcional del proyecto
+
+El enunciado general del trabajo practico define una aplicacion para administrar
+consorcios de propietarios. La vision del sistema es permitir administrar
+consorcios, agregar gastos por distintos motivos y calcular cuanto debe aportar
+cada miembro por mes de acuerdo con su participacion sobre la superficie total.
+
+Necesidades funcionales indicadas por el enunciado:
+- Gestionar gastos comunes.
+- Gestionar gastos particulares.
+- Gestionar pagos de expensas.
+- Gestionar comision de administrador.
+- Gestionar mora.
+- Reportar estado de cuentas.
+
+El repositorio actual implementa principalmente la version 1 de autenticacion de
+usuarios y perfil. Ademas contiene un modulo backend de gastos con algunas rutas
+CRUD parciales, pero ese modulo no esta integrado de forma efectiva en la app
+Flask final y no posee frontend ni esquema SQL versionado en el repositorio.
+
+2. Stack tecnico actual
+
+Frontend:
+- Next.js 15.3.0 o superior, configurado en package.json con dependencia
+  "^15.3.0".
+- React 19.1.0 y react-dom 19.1.0.
+- App Router de Next, usando la carpeta app/.
+- JavaScript/JSX. No hay TypeScript.
+- Estilos inline definidos dentro de cada pagina.
+- Alias "@/..." configurado en jsconfig.json para apuntar a la raiz del repo.
+
+Backend:
+- Python 3.12 segun backend/Pipfile.
+- Flask 3.0.3.
+- flask-cors 4.0.1.
+- python-dotenv 1.0.1.
+- supabase 2.6.0.
+- API HTTP JSON.
+- Base de datos Postgres en Supabase.
+
+Persistencia:
+- Supabase/Postgres.
+- El unico script SQL versionado es sql/users.sql.
+- La tabla versionada actual es public.users.
+
+3. Estructura relevante del repositorio
+
+- app/layout.jsx: layout raiz de Next, define html lang="es" y metadata title.
+- app/page.jsx: pagina principal con navegacion a login y registro.
+- app/login/page.jsx: formulario de inicio de sesion.
+- app/register/page.jsx: formulario de creacion de cuenta.
+- app/home/page.jsx: pagina de perfil del usuario autenticado.
+- lib/api.js: cliente fetch del frontend hacia el backend Flask.
+- backend/app.py: aplicacion Flask y endpoints efectivos de usuarios.
+- backend/database.py: cliente Supabase compartido para modulos backend.
+- backend/modules/gastos/routes.py: blueprint de gastos, actualmente no efectivo
+  por la redefinicion de app en backend/app.py.
+- sql/users.sql: creacion de tabla public.users.
+- .env.example: ejemplo de variables del frontend.
+- backend/.env.example: ejemplo de variables del backend.
+- README.md: instrucciones de instalacion y uso de la V0.
+
+4. Configuracion de entorno
+
+Frontend:
+- Archivo esperado en la raiz: .env.local.
+- Variable:
+  NEXT_PUBLIC_API_BASE_URL=http://localhost:5000
+- Si la variable no existe, lib/api.js usa por defecto http://localhost:5000.
+
+Backend:
+- Archivo esperado dentro de backend/: .env.
+- Variables:
+  SUPABASE_URL=https://fsghbrcsmuwwcevregmi.supabase.co
+  SUPABASE_SERVICE_KEY=<service_role_key_de_supabase>
+  FRONTEND_ORIGIN=http://localhost:3000
+  PORT=5000
+- SUPABASE_SERVICE_KEY debe ser una service role key y no debe exponerse en el
+  frontend.
+
+5. Scripts y ejecucion
+
+Frontend:
+- npm install
+- npm run dev: levanta Next en modo desarrollo.
+- npm run build: compila produccion.
+- npm run start: sirve el build de produccion.
+
+Backend:
+- cd backend
+- python -m venv .venv
+- Activar el entorno virtual.
+- pip install -r requirements.txt
+- python app.py
+
+El backend escucha en 0.0.0.0 y usa el puerto indicado por PORT. Si PORT no esta
+definido, usa 5000.
+
+6. Modelo de datos versionado
+
+Tabla public.users:
+- id uuid primary key
+- username text not null unique
+- password text not null
+
+Script de referencia:
+- sql/users.sql
+
+Consideraciones:
+- Las contrasenas se guardan en texto plano en la implementacion actual, de
+  acuerdo con el alcance simplificado de la V0. No hay hashing, salt, JWT,
+  sesiones de servidor ni cookies seguras.
+- No existe en el repositorio un script SQL versionado para tablas de consorcios,
+  unidades, gastos, expensas, pagos, mora, comisiones o estados de cuenta.
+
+7. Backend efectivo en backend/app.py
+
+backend/app.py contiene dos inicializaciones de Flask:
+- Primero crea app, habilita CORS y registra gastos_bp con prefijo /api/gastos.
+- Luego vuelve a importar dependencias, vuelve a crear app y vuelve a configurar
+  CORS. Esta segunda app reemplaza a la primera en el modulo.
+
+Consecuencia:
+- La aplicacion efectiva es la segunda instancia de Flask.
+- Las rutas de usuarios y ping estan disponibles.
+- El blueprint de gastos registrado en la primera instancia no queda registrado
+  en la app final. Por lo tanto, /api/gastos no debe considerarse funcional en el
+  estado actual, aunque el archivo de rutas exista.
+
+Funciones auxiliares efectivas:
+- get_supabase(): lee SUPABASE_URL y SUPABASE_SERVICE_KEY desde variables de
+  entorno y crea un cliente Supabase con create_client.
+- request_credentials(): lee JSON del request, toma body.user y body.password,
+  recorta espacios del usuario, valida que ambos campos existan y devuelve error
+  400 si falta alguno.
+
+Endpoints efectivos:
+
+GET /ping
+- Respuesta 200:
+  {"message":"pong"}
+- Uso: health check simple.
+
+POST /users/create
+- Body esperado:
+  {"user":"user","password":"1234"}
+- Validaciones:
+  - user y password son requeridos.
+  - username no debe existir previamente en public.users.
+- Comportamiento:
+  - Busca el username en Supabase.
+  - Si existe, responde 400 con error "El usuario ya existe".
+  - Si no existe, genera un uuid4 como id.
+  - Inserta id, username y password en public.users.
+- Respuesta exitosa 200:
+  {"id":"<uuid-generado>"}
+- Errores 400:
+  - Campos faltantes.
+  - Usuario ya existente.
+  - Insercion sin datos de retorno.
+
+POST /users/login
+- Body esperado:
+  {"user":"user","password":"1234"}
+- Validaciones:
+  - user y password son requeridos.
+  - El username debe existir.
+  - La password recibida debe coincidir exactamente con el valor guardado.
+- Comportamiento:
+  - Consulta id,password por username.
+  - Si no hay usuario o la password no coincide, responde 400.
+- Respuesta exitosa 200:
+  {"id":"<uuid-del-usuario>"}
+- Error de credenciales:
+  {"error":"Usuario o contrasena invalidos"}
+
+GET /user/<user_id>
+- Parametro de ruta:
+  user_id: uuid del usuario.
+- Comportamiento:
+  - Consulta id,username en public.users por id.
+  - Si no existe, responde 400.
+- Respuesta exitosa 200:
+  {"id":"<uuid-del-usuario>","user":"<username>"}
+- Error:
+  {"error":"Usuario no encontrado"}
+
+8. Backend de gastos existente pero no integrado
+
+Archivo:
+- backend/modules/gastos/routes.py
+
+Dependencia:
+- Importa supabase desde backend/database.py.
+
+Blueprint:
+- gastos_bp = Blueprint("gastos", __name__)
+- La intencion original es montarlo bajo /api/gastos.
+- Por la redefinicion de app en backend/app.py, esta intencion no queda activa.
+
+Rutas definidas en el archivo:
+
+POST /api/gastos/
+- Registra un gasto.
+- Body esperado por el codigo:
+  {
+    "descripcion": "...",
+    "monto": 100,
+    "fecha_gasto": "YYYY-MM-DD",
+    "categoria": "...",
+    "estado": "Pendiente",
+    "metodo_pago": "...",
+    "comprobante": "...",
+    "unidad_id": "..."
+  }
+- Campos validados como obligatorios:
+  - descripcion
+  - monto
+- Estado por defecto:
+  - "Pendiente"
+- Inserta en tabla Supabase "gastos".
+- Respuesta exitosa teorica:
+  status 201, {"status":"success","data":[...]}
+- Error:
+  status 400 con {"status":"error","message":"..."}
+
+GET /api/gastos/unidades-selector
+- Consulta tabla "unidades".
+- Selecciona id, piso, departamento.
+- Respuesta exitosa teorica:
+  status 200 con lista de unidades.
+- Error:
+  status 500.
+
+PUT /api/gastos/<id>
+- Actualiza un gasto existente en tabla "gastos".
+- Usa el JSON recibido completo como payload de update.
+- Filtra por eq("id", id).
+- Si Supabase no devuelve datos, responde 404 "Gasto no encontrado".
+- Respuesta exitosa teorica:
+  status 200, {"status":"success","data":[...]}
+
+DELETE /api/gastos/<id>
+- Elimina un gasto de tabla "gastos" por id.
+- Si Supabase no devuelve datos, responde 404 "Gasto no encontrado".
+- Respuesta exitosa teorica:
+  status 200, {"status":"success","message":"Gasto eliminado exitosamente"}
+
+Faltantes del modulo de gastos:
+- No esta integrado en la app Flask efectiva.
+- No hay frontend que consuma estas rutas.
+- No hay SQL versionado para tablas gastos o unidades.
+- No hay endpoints para listar gastos.
+- No hay validacion completa de tipos, montos positivos, fecha, categoria,
+  metodo de pago, comprobante o existencia de unidad_id.
+- No hay vinculacion con usuarios autenticados ni consorcios.
+- No hay manejo de permisos.
+
+9. Frontend implementado
+
+app/layout.jsx:
+- Define metadata.title = "Gestion de consorcios".
+- Renderiza <html lang="es"><body>{children}</body></html>.
+
+app/page.jsx:
+- Pagina publica principal.
+- Muestra titulo "Gestion de consorcios".
+- Muestra texto "Ingresa con tu cuenta o registra un usuario nuevo."
+- Contiene dos links:
+  - /login con texto "Iniciar sesion".
+  - /register con texto "Crear cuenta".
+- Usa estilos inline y fuente Arial.
+
+app/register/page.jsx:
+- Client Component.
+- Estado local:
+  - user
+  - password
+  - error
+  - isSubmitting
+- Formulario con campos Usuario y Contrasena.
+- Al enviar:
+  - Previene submit HTML.
+  - Limpia error.
+  - Llama apiRequest("/users/create", method POST, body JSON).
+  - En exito redirige a /login.
+  - En error muestra err.message.
+- El boton se deshabilita mientras envia y cambia texto a "Enviando...".
+
+app/login/page.jsx:
+- Client Component.
+- Estado local:
+  - user
+  - password
+  - error
+  - isSubmitting
+- Formulario con campos Usuario y Contrasena.
+- Al enviar:
+  - Llama apiRequest("/users/login", method POST, body JSON).
+  - Toma data.id de la respuesta.
+  - Guarda data.id en window.localStorage con clave "userId".
+  - Redirige a /home.
+- En error muestra err.message.
+
+app/home/page.jsx:
+- Client Component.
+- Estado local:
+  - profile
+  - error
+  - isLoading
+- Al montar:
+  - Lee userId desde localStorage.
+  - Si no existe, redirige a /login.
+  - Si existe, llama apiRequest(`/user/${userId}`).
+  - Guarda la respuesta en profile.
+- Muestra:
+  - ID del usuario.
+  - Usuario.
+- Acciones:
+  - Link a /.
+  - Boton "Cerrar sesion" que elimina localStorage.userId y redirige a /.
+
+lib/api.js:
+- Exporta API_BASE_URL desde NEXT_PUBLIC_API_BASE_URL o fallback
+  http://localhost:5000.
+- apiRequest(path, options):
+  - Ejecuta fetch contra `${API_BASE_URL}${path}`.
+  - Agrega header Content-Type: application/json.
+  - Parsea JSON salvo status 204.
+  - Si response.ok es false, lanza Error con body.error o mensaje generico.
+  - Si response.ok es true, devuelve el body.
+
+10. Estado de cumplimiento respecto de requerimientos V0
+
+Cumplido:
+- Frontend con Next.js.
+- Pagina principal con botones/links a iniciar sesion y crear cuenta.
+- Pagina de registro con formulario y boton enviar.
+- Pagina de login con formulario y boton enviar.
+- Registro llama al backend.
+- Login llama al backend.
+- Al crear usuario se redirige a /login.
+- Al iniciar sesion se guarda userId en localStorage.
+- Al iniciar sesion se redirige a /home.
+- /home consulta y muestra informacion del usuario.
+- Backend con Flask.
+- Endpoint GET /ping.
+- Endpoint POST /users/create.
+- Endpoint POST /users/login.
+- Endpoint GET /user/<id>.
+- Conexion backend a Supabase por variables de entorno.
+- Tabla users versionada con id, username y password.
+
+Parcial o con observaciones:
+- No existe autenticacion real por token o sesion. El frontend solo guarda el id
+  de usuario en localStorage.
+- Las contrasenas se almacenan en texto plano.
+- Los errores de backend usan 400 para usuario no encontrado en GET /user/<id>,
+  en lugar de 404.
+- No hay validaciones de longitud, formato ni politicas de contrasena.
+- No hay tests automatizados.
+
+11. Estado respecto del enunciado general de consorcios
+
+Implementado:
+- Base de autenticacion minima de usuarios.
+- Home de usuario.
+- Blueprint de gastos escrito parcialmente pero no activo.
+
+No implementado o no verificable desde el repositorio:
+- Gestion de consorcios.
+- Gestion de unidades funcional desde frontend.
+- Modelo de superficies y participacion porcentual.
+- Calculo de aportes mensuales por participacion de superficie.
+- Gestion completa de gastos comunes.
+- Gestion completa de gastos particulares.
+- Gestion de pagos de expensas.
+- Gestion de comision de administrador.
+- Gestion de mora.
+- Reporte de estado de cuentas.
+- Listado, busqueda o filtrado de gastos.
+- Relacion entre usuarios, consorcios, unidades, gastos y pagos.
+- Esquema SQL de tablas de dominio salvo users.
+- Reglas de permisos por rol o tipo de usuario.
