@@ -21,6 +21,8 @@ def get_cors_origins():
 CORS(app, origins=get_cors_origins())
 app.register_blueprint(gastos_bp, url_prefix="/api/gastos")
 
+app.register_blueprint(gastos_bp, url_prefix='/api/gastos')
+
 
 def get_supabase():
     url = os.environ["SUPABASE_URL"]
@@ -34,7 +36,7 @@ def request_credentials():
     password = body.get("password") or ""
 
     if not username or not password:
-        return None, None, (jsonify({"error": "Usuario y contrasena son requeridos"}), 400)
+        return None, None, (jsonify({"error": "Usuario y contraseña son requeridos"}), 400)
 
     return username, password, None
 
@@ -84,7 +86,7 @@ def login_user():
     )
 
     if not result.data or result.data[0]["password"] != password:
-        return jsonify({"error": "Usuario o contrasena invalidos"}), 400
+        return jsonify({"error": "Usuario o contraseña invalidos"}), 400
 
     return jsonify({"id": result.data[0]["id"]}), 200
 

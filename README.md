@@ -92,7 +92,7 @@ create table if not exists public.users (
 
 El mismo script esta versionado en `sql/users.sql`.
 
-Para esta V0, las contrasenas se guardan en texto plano segun el alcance definido para el trabajo practico.
+Para esta V0, las contraseñas se guardan en texto plano segun el alcance definido para el trabajo practico.
 
 ## 5. Obtener la service_role key de Supabase
 
@@ -185,7 +185,7 @@ http://localhost:3000
 
 1. Abrir `http://localhost:3000`.
 2. Entrar a `Crear cuenta`.
-3. Crear un usuario con contrasena.
+3. Crear un usuario con contraseña.
 4. Confirmar que la app redirige a `Iniciar sesion`.
 5. Iniciar sesion con el usuario creado.
 6. Confirmar que la app guarda el `userId` en `localStorage` y redirige a `/home`.
