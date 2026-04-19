@@ -1,15 +1,3 @@
-from flask import Flask
-from flask_cors import CORS
-from modules.gastos.routes import gastos_bp
-
-app = Flask(__name__)
-CORS(app) # Permite que el frontend (Next.js) se conecte
-
-# Registramos el módulo. Todas las rutas empezarán con /api/gastos
-app.register_blueprint(gastos_bp, url_prefix='/api/gastos')
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
 import os
 import uuid
 
@@ -18,10 +6,20 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from supabase import create_client
 
+from modules.gastos.routes import gastos_bp
+
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, origins=os.getenv("FRONTEND_ORIGIN", "http://localhost:3000"))
+
+
+def get_cors_origins():
+    origins = os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")
+    return [origin.strip() for origin in origins.split(",") if origin.strip()]
+
+
+CORS(app, origins=get_cors_origins())
+app.register_blueprint(gastos_bp, url_prefix="/api/gastos")
 
 
 def get_supabase():
@@ -109,4 +107,5 @@ def get_user(user_id):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")), debug=True)
+    debug = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")), debug=debug)
