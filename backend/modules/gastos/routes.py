@@ -101,3 +101,15 @@ def eliminar_gasto(gasto_id):
         return jsonify({"message": "Gasto eliminado exitosamente"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
+
+@gastos_bp.route('/<string:id>', methods=['GET'])
+def obtener_gasto(id):
+    """Trae la información de un gasto específico por su ID"""
+    try:
+        # Usamos gastos_ordinarios y quitamos la relación de unidades por ahora para evitar errores
+        res = supabase.table("gastos_ordinarios").select("*").eq("id", id).single().execute()
+        
+        return jsonify(res.data), 200
+    except Exception as e:
+        return jsonify({"error": "Gasto no encontrado", "detalle": str(e)}), 404
