@@ -230,13 +230,45 @@ export default function HomePage() {
           border-left: 2px solid transparent;
           text-decoration: none;
           white-space: nowrap; overflow: hidden;
-          transition: color 0.15s, background 0.15s, border-color 0.15s;
+          transition: color 0.15s, background 0.15s, border-color 0.15s, padding 0.22s;
           position: relative;
         }
         .sidebar-item:hover { color: #e2e8f0; background: rgba(59,130,246,0.06); }
         .sidebar-item.active { color: #e2e8f0; background: rgba(59,130,246,0.1); border-left-color: #3b82f6; }
+
+        /* collapsed: center icon */
+        .sidebar.closed .sidebar-item {
+          padding: 10px 0;
+          justify-content: center;
+          gap: 0;
+        }
+
         .sidebar-item-label { opacity: 1; transition: opacity 0.15s; }
-        .sidebar.closed .sidebar-item-label { opacity: 0; }
+        .sidebar.closed .sidebar-item-label { opacity: 0; width: 0; overflow: hidden; }
+
+        /* tooltip shown on hover when collapsed */
+        .sidebar-tooltip {
+          position: absolute;
+          left: calc(100% + 10px);
+          top: 50%; transform: translateY(-50%);
+          background: #1e3a8a;
+          color: #e2e8f0;
+          font-family: 'Space Mono', monospace;
+          font-size: 10px; letter-spacing: 0.5px;
+          padding: 5px 10px; border-radius: 6px;
+          white-space: nowrap; pointer-events: none;
+          opacity: 0; transition: opacity 0.15s;
+          border: 0.5px solid rgba(59,130,246,0.3);
+          z-index: 50;
+        }
+        .sidebar-tooltip::before {
+          content: '';
+          position: absolute;
+          right: 100%; top: 50%; transform: translateY(-50%);
+          border: 5px solid transparent;
+          border-right-color: #1e3a8a;
+        }
+        .sidebar.closed .sidebar-item:hover .sidebar-tooltip { opacity: 1; }
 
         .sidebar-badge {
           margin-left: auto;
@@ -248,7 +280,17 @@ export default function HomePage() {
           opacity: 1; transition: opacity 0.15s;
           flex-shrink: 0;
         }
-        .sidebar.closed .sidebar-badge { opacity: 0; }
+        .sidebar.closed .sidebar-badge { opacity: 0; width: 0; padding: 0; margin: 0; overflow: hidden; }
+
+        /* red dot when collapsed + badge */
+        .sidebar.closed .sidebar-item.has-badge::after {
+          content: '';
+          position: absolute;
+          top: 8px; right: 8px;
+          width: 6px; height: 6px;
+          background: #f87171; border-radius: 50%;
+          border: 1.5px solid #0f1f3d;
+        }
 
         .sidebar-footer {
           margin-top: auto;
@@ -405,11 +447,12 @@ export default function HomePage() {
                 <Link
                   key={item.label}
                   href={item.href}
-                  className={`sidebar-item${item.href === "/home" ? " active" : ""}`}
+                  className={`sidebar-item${item.href === "/home" ? " active" : ""}${item.badge ? " has-badge" : ""}`}
                 >
                   {item.icon}
                   <span className="sidebar-item-label">{item.label}</span>
                   {item.badge && <span className="sidebar-badge">4</span>}
+                  <span className="sidebar-tooltip">{item.label}</span>
                 </Link>
               ))}
             </div>
