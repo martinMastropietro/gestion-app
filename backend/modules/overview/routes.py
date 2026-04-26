@@ -69,6 +69,6 @@ def morosos_overview():
     try:
         rows = [row for row in load_debt_by_unit() if row["deuda_total"] > 0]
         rows.sort(key=lambda row: row["deuda_total"], reverse=True)
-        return jsonify(rows[:10]), 200
+        return jsonify(rows), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
