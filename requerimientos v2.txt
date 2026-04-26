@@ -1,0 +1,13 @@
+La aplicacion debe tener el concepto de fecha/mes para poder llevar un historial de gastos, pagos, expensas adeudadas.
+Los gastos tiene una fecha de creacion y un campo que indica si deben considerarse todos los meses o solo el mes en el que se creo. Si se selecciona que debe repetirse deben crearse la entidad de dicho gasto correspondiente al calcular expensas para dicho mes. Osea que si se creo el gasto "luz" en enero, al calcular expensas en febrero debe crear la entidad de gasto "luz" de febrero.
+Los gastos para distintos meses son distintas entidades en la misma tabla que ahora debe tener la columna "mes".
+Al calcular las expensas se debe elegir un mes y año y se calculan las expensas del mes elegido, es decir, solo se suman gastos aplicables (aquellos que se hayan creado en el mes del calculo o aquellos que se hayan creado en el pasado pero se deban repetir todos los meses, en este caso se crean las entidades gastos correspondientes revisando los gastos del mes anterior).
+Al calcular las expensas para cada unidad se genera una entidad deuda que indica cuanto debe pagar una unidad sumando la expensa calculada y las expensas adeudadas.
+Se debe crear la entidad pago, que se asocia a una unidad y una fecha. Al realizar un pago se crea y se persiste dicha entidad con unidad y mes.
+Los pagos deben guardarse en su tabla con la fecha de pago y unidad asociada.
+Las expensas ahora al calcularse deben guardarse en su tabla con mes de la expensa y unidad asociada.
+La deuda debe calcularse a partir de las expensas totales menos pagos realizados.
+
+frontend
+En la pantalla overview debe modificarse el panel morosos criticos, eliminando las columnas "Meses adeudados" y "estado" dado que no se cuenta con dicha informacion en el dominio.
+El panel de "deuda total" debe calcular la deuda de todas las unidades y sumarlas.
