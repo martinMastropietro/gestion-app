@@ -8,6 +8,8 @@ from supabase import create_client
 
 from modules.expensas.routes import expensas_bp
 from modules.gastos.routes import gastos_bp
+from modules.overview.routes import overview_bp
+from modules.pagos.routes import pagos_bp
 from modules.unidades.routes import unidades_bp
 
 load_dotenv()
@@ -24,6 +26,8 @@ CORS(app, origins=get_cors_origins())
 app.register_blueprint(gastos_bp, url_prefix="/api/gastos")
 app.register_blueprint(unidades_bp, url_prefix="/api/unidades")
 app.register_blueprint(expensas_bp, url_prefix="/api/expensas")
+app.register_blueprint(pagos_bp, url_prefix="/api/pagos")
+app.register_blueprint(overview_bp, url_prefix="/api/overview")
 
 
 def get_supabase():
@@ -79,13 +83,7 @@ def login_user():
     if error:
         return error
 
-    result = (
-        get_supabase()
-        .table("users")
-        .select("id,password")
-        .eq("username", username)
-        .execute()
-    )
+    result = get_supabase().table("users").select("id,password").eq("username", username).execute()
 
     if not result.data or result.data[0]["password"] != password:
         return jsonify({"error": "Usuario o contrasena invalidos"}), 400
@@ -95,13 +93,7 @@ def login_user():
 
 @app.get("/user/<user_id>")
 def get_user(user_id):
-    result = (
-        get_supabase()
-        .table("users")
-        .select("id,username")
-        .eq("id", user_id)
-        .execute()
-    )
+    result = get_supabase().table("users").select("id,username").eq("id", user_id).execute()
 
     if not result.data:
         return jsonify({"error": "Usuario no encontrado"}), 400
