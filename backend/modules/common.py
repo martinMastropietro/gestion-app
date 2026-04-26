@@ -1,6 +1,10 @@
+import calendar
 from datetime import date
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from functools import wraps
 from time import sleep
+
+from flask import jsonify, request
 
 
 TRANSIENT_SOCKET_MESSAGES = (
@@ -87,3 +91,42 @@ def next_period(month, year):
 
 def first_day_for_period(month, year):
     return date(year, month, 1).isoformat()
+
+
+def last_day_for_period(month, year):
+    last = calendar.monthrange(year, month)[1]
+    return date(year, month, last)
+
+
+def require_role(*allowed_roles):
+    """Decorator that enforces role-based access on a Flask route.
+
+    Reads X-User-Id header, looks up the user in Supabase, and checks that
+    their rol is in allowed_roles. On success, sets request.current_user so
+    the route can read the authenticated user without a second DB call.
+    """
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            from database import supabase  # local import avoids circular dep
+
+            user_id = request.headers.get("X-User-Id", "").strip()
+            if not user_id:
+                return jsonify({"error": "Autenticación requerida"}), 401
+
+            res = execute_with_retry(
+                supabase.table("users")
+                .select("id, rol, unidad_id")
+                .eq("id", user_id)
+            )
+            if not res.data:
+                return jsonify({"error": "Usuario no encontrado"}), 401
+
+            user = res.data[0]
+            if user["rol"] not in allowed_roles:
+                return jsonify({"error": "Acceso denegado"}), 403
+
+            request.current_user = user
+            return f(*args, **kwargs)
+        return wrapper
+    return decorator

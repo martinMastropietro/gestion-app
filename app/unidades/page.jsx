@@ -41,6 +41,8 @@ export default function UnidadesPage() {
   const [unidades, setUnidades] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
+  const [editingHasInquilino, setEditingHasInquilino] = useState(false);
+  const [codigoInput, setCodigoInput] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -62,24 +64,32 @@ export default function UnidadesPage() {
 
   function openCreate() {
     setEditingId(null);
+    setEditingHasInquilino(false);
+    setCodigoInput("");
     setForm(emptyForm);
+    setError("");
     setModalOpen(true);
   }
 
   function openEdit(u) {
     setEditingId(u.id);
+    setEditingHasInquilino(!!u.tiene_inquilino);
+    setCodigoInput("");
     setForm({
       piso: u.piso ?? "", apartamento: u.apartamento || "",
       nombre_responsable: u.nombre_responsable || "", dni_responsable: u.dni_responsable || "",
       mail_responsable: u.mail_responsable || "", tel_responsable: u.tel_responsable || "",
       superficie: u.superficie || "",
     });
+    setError("");
     setModalOpen(true);
   }
 
   function closeModal() {
     setModalOpen(false);
     setEditingId(null);
+    setEditingHasInquilino(false);
+    setCodigoInput("");
     setForm(emptyForm);
     setError("");
   }
@@ -92,10 +102,12 @@ export default function UnidadesPage() {
     e.preventDefault();
     setError("");
     setIsSubmitting(true);
+    const body = { ...form };
+    if (codigoInput.trim()) body.codigo_acceso = codigoInput.trim().toUpperCase();
     try {
       await apiRequest(editingId ? `/api/unidades/${editingId}` : "/api/unidades/", {
         method: editingId ? "PUT" : "POST",
-        body: JSON.stringify(form),
+        body: JSON.stringify(body),
       });
       closeModal();
       await loadUnidades();
@@ -229,7 +241,16 @@ export default function UnidadesPage() {
           cursor: pointer; transition: border-color 0.15s, background 0.15s;
         }
         .up-btn-delete:hover { border-color: #dc2626; background: rgba(220,38,38,0.04); }
+        .up-btn-vincular {
+          padding: 6px 12px; background: #fff; color: #15803d;
+          border: 0.5px solid rgba(22,163,74,0.3); border-radius: 6px;
+          font-size: 11px; font-family: 'Space Mono', monospace; letter-spacing: 0.5px;
+          cursor: pointer; transition: border-color 0.15s, background 0.15s;
+        }
+        .up-btn-vincular:hover { border-color: #15803d; background: rgba(22,163,74,0.04); }
         .up-empty { padding: 48px 20px; text-align: center; font-family: 'Space Mono', monospace; font-size: 11px; color: #b0bed6; letter-spacing: 1px; }
+        .up-badge-linked { display: inline-flex; align-items: center; gap: 4px; font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.8px; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; background: rgba(22,163,74,.08); color: #15803d; border: 0.5px solid rgba(22,163,74,.2); margin-top: 4px; }
+        .up-badge-unlinked { display: inline-flex; align-items: center; gap: 4px; font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.8px; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; background: rgba(148,163,184,.08); color: #94a3b8; border: 0.5px solid rgba(148,163,184,.2); margin-top: 4px; }
 
         /* ── MODAL ── */
         .modal-overlay {
@@ -361,7 +382,13 @@ export default function UnidadesPage() {
                   <tbody>
                     {unidades.map((u) => (
                       <tr key={u.id}>
-                        <td><span className="up-unidad-badge">{u.piso}{u.apartamento}</span></td>
+                        <td>
+                          <span className="up-unidad-badge">{u.piso}{u.apartamento}</span>
+                          <br />
+                          <span className={u.tiene_inquilino ? "up-badge-linked" : "up-badge-unlinked"}>
+                            {u.tiene_inquilino ? "● Vinculado" : "○ Sin app"}
+                          </span>
+                        </td>
                         <td>
                           <div className="up-resp-name">{u.nombre_responsable}</div>
                           <div className="up-resp-dni">DNI {u.dni_responsable}</div>
@@ -396,6 +423,8 @@ export default function UnidadesPage() {
         <Modal title={editingId ? "// editar unidad" : "// nueva unidad"} onClose={closeModal}>
           <form onSubmit={handleSubmit}>
             <div className="modal-body">
+
+              {/* Piso + Apartamento — siempre requeridos */}
               <div className="modal-grid">
                 <div className="modal-field">
                   <label className="modal-label" htmlFor="u-piso">Piso</label>
@@ -409,24 +438,70 @@ export default function UnidadesPage() {
 
               <div className="modal-divider" />
 
+              {/* Código de inquilino */}
+              <div className="modal-field">
+                <label className="modal-label" htmlFor="u-codigo">
+                  {editingHasInquilino ? "¿El inquilino cambió? Pegá su nuevo código:" : "Si el inquilino ya creó su cuenta, pegá su código acá:"}
+                </label>
+                <input
+                  id="u-codigo"
+                  className="modal-input"
+                  placeholder="Ej: H7K2MP  (opcional)"
+                  value={codigoInput}
+                  onChange={(e) => setCodigoInput(e.target.value.toUpperCase())}
+                  maxLength={6}
+                  style={{ fontFamily: "'Space Mono', monospace", letterSpacing: 4, textTransform: "uppercase" }}
+                />
+              </div>
+
+              <div className="modal-divider" />
+
+            
               <div className="modal-grid">
                 <div className="modal-field">
                   <label className="modal-label" htmlFor="u-nombre">Responsable</label>
-                  <input id="u-nombre" className="modal-input" placeholder="Nombre completo" value={form.nombre_responsable} onChange={(e) => updateField("nombre_responsable", e.target.value)} required />
+                  <input
+                    id="u-nombre" className="modal-input" placeholder="Nombre completo"
+                    value={form.nombre_responsable} onChange={(e) => updateField("nombre_responsable", e.target.value)}
+                    disabled={editingHasInquilino}
+                    style={editingHasInquilino ? { background: "#f1f5f9", color: "#94a3b8", cursor: "not-allowed" } : {}}
+                  />
                 </div>
                 <div className="modal-field">
                   <label className="modal-label" htmlFor="u-dni">DNI</label>
-                  <input id="u-dni" className="modal-input" placeholder="00.000.000" value={form.dni_responsable} onChange={(e) => updateField("dni_responsable", e.target.value)} required />
+                  <input
+                    id="u-dni" className="modal-input" placeholder="00.000.000"
+                    value={form.dni_responsable} onChange={(e) => updateField("dni_responsable", e.target.value)}
+                    disabled={editingHasInquilino}
+                    style={editingHasInquilino ? { background: "#f1f5f9", color: "#94a3b8", cursor: "not-allowed" } : {}}
+                  />
                 </div>
                 <div className="modal-field">
                   <label className="modal-label" htmlFor="u-mail">Email</label>
-                  <input id="u-mail" className="modal-input" type="email" placeholder="correo@ejemplo.com" value={form.mail_responsable} onChange={(e) => updateField("mail_responsable", e.target.value)} required />
+                  <input
+                    id="u-mail" className="modal-input" type="email" placeholder="correo@ejemplo.com"
+                    value={form.mail_responsable} onChange={(e) => updateField("mail_responsable", e.target.value)}
+                    disabled={editingHasInquilino}
+                    style={editingHasInquilino ? { background: "#f1f5f9", color: "#94a3b8", cursor: "not-allowed" } : {}}
+                  />
                 </div>
                 <div className="modal-field">
                   <label className="modal-label" htmlFor="u-tel">Teléfono</label>
-                  <input id="u-tel" className="modal-input" placeholder="+54 9 11..." value={form.tel_responsable} onChange={(e) => updateField("tel_responsable", e.target.value)} required />
+                  <input
+                    id="u-tel" className="modal-input" placeholder="+54 9 11..."
+                    value={form.tel_responsable} onChange={(e) => updateField("tel_responsable", e.target.value)}
+                    disabled={editingHasInquilino}
+                    style={editingHasInquilino ? { background: "#f1f5f9", color: "#94a3b8", cursor: "not-allowed" } : {}}
+                  />
                 </div>
               </div>
+
+                {/* Datos de contacto — readonly si ya hay inquilino vinculado */}
+                {editingHasInquilino && (
+                <p style={{ margin: "0 0 10px", fontSize: 12, color: "#93aed6", fontFamily: "'Space Mono', monospace", letterSpacing: 0.3 }}>
+                  Datos completados por el inquilino.
+                </p>
+              )}
 
               <div className="modal-divider" />
 

@@ -24,8 +24,13 @@ export default function HomePage() {
 
   useEffect(() => {
     const userId = window.localStorage.getItem("userId");
+    const userRole = window.localStorage.getItem("userRole");
     if (!userId) {
       router.push("/login");
+      return;
+    }
+    if (userRole === "inquilino") {
+      router.push("/inquilino");
       return;
     }
 
@@ -37,7 +42,7 @@ export default function HomePage() {
         const summaryData = await apiRequest("/api/overview/resumen");
         setSummary(summaryData);
 
-        const morososData = await apiRequest("/api/overview/morosos");
+        const morososData = await apiRequest("/api/overview/morosos_urgencia");
         setMorosos(morososData || []);
       } catch (err) {
         setError(err.message);
@@ -91,6 +96,8 @@ export default function HomePage() {
         th { font-size: 10px; color: #94a3b8; }
         .money { font-family: 'Space Mono', monospace; color: #1e3a8a; font-weight: 700; }
         .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; background: rgba(37,99,235,.08); color: #1e3a8a; font-family: 'Space Mono', monospace; }
+        .badge-overdue { background: rgba(176,0,32,.08); color: #b00020; }
+        .badge-ok { background: rgba(22,163,74,.08); color: #15803d; }
         .error { color: #b00020; background: #fff0f2; border: 1px solid rgba(176,0,32,.15); padding: 12px 14px; border-radius: 8px; }
         .empty { color: #94a3b8; text-align: center; padding: 28px; }
         @media (max-width: 980px) { .root { grid-template-columns: 1fr; } .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -147,26 +154,46 @@ export default function HomePage() {
           </div>
 
           <div className="card">
-            <div className="section-title">Morosos críticos</div>
+            <div className="section-title">Morosos · urgencia</div>
             {morosos.length === 0 ? (
               <div className="empty">No hay unidades con deuda pendiente.</div>
             ) : (
               <table>
                 <thead>
                   <tr>
+                    <th>#</th>
                     <th>Unidad</th>
                     <th>Propietario</th>
                     <th>Deuda total</th>
+                    <th>Días / vencimiento</th>
+                    <th>Último pago</th>
+                    <th>Estado</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {morosos.map((moroso) => (
-                    <tr key={moroso.unidad_id}>
-                      <td><span className="badge">{moroso.unidad}</span></td>
-                      <td>{moroso.propietario}</td>
-                      <td className="money">{formatMoney(moroso.deuda_total)}</td>
-                    </tr>
-                  ))}
+                  {morosos.map((moroso, idx) => {
+                    const dias = moroso.dias_atraso;
+                    const overdue = dias !== null && dias > 0;
+                    const diasLabel = dias === null
+                      ? "—"
+                      : dias > 0
+                        ? `${dias}d vencido`
+                        : dias === 0
+                          ? "vence hoy"
+                          : `${-dias}d restantes`;
+                    const estado = dias === null ? "—" : overdue ? "Vencido" : "Al día";
+                    return (
+                      <tr key={moroso.unidad_id}>
+                        <td style={{ color: "#94a3b8", fontFamily: "Space Mono, monospace", fontSize: 11 }}>{idx + 1}</td>
+                        <td><span className="badge">{moroso.unidad}</span></td>
+                        <td>{moroso.propietario}</td>
+                        <td className="money">{formatMoney(moroso.deuda_total)}</td>
+                        <td style={{ fontFamily: "Space Mono, monospace", fontSize: 12, color: overdue ? "#b00020" : "#15803d" }}>{diasLabel}</td>
+                        <td style={{ fontSize: 12, color: "#64748b" }}>{moroso.ultimo_pago || "—"}</td>
+                        <td><span className={`badge${overdue ? " badge-overdue" : " badge-ok"}`}>{estado}</span></td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
