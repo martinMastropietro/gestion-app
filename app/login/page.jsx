@@ -23,7 +23,9 @@ export default function LoginPage() {
         body: JSON.stringify({ user, password }),
       });
       window.localStorage.setItem("userId", data.id);
-      router.push("/home");
+      window.localStorage.setItem("userRole", data.rol || "encargado");
+      window.localStorage.setItem("userUnidadId", data.unidad_id || "");
+      router.push(data.rol === "inquilino" ? "/inquilino" : "/home");
     } catch (err) {
       setError(err.message);
     } finally {

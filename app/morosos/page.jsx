@@ -11,7 +11,7 @@ export default function MorososPage() {
 
   useEffect(() => {
     setError("");
-    apiRequest("/api/overview/morosos")
+    apiRequest("/api/overview/morosos_urgencia")
       .then((data) => setRows(data || []))
       .catch((err) => setError(err.message))
       .finally(() => setIsLoading(false));
@@ -41,6 +41,9 @@ export default function MorososPage() {
         th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid rgba(37,99,235,.08); }
         th { font-size: 10px; color: #94a3b8; }
         .money { font-family: 'Space Mono', monospace; color: #1e3a8a; font-weight: 700; }
+        .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-family: 'Space Mono', monospace; font-size: 11px; }
+        .badge-overdue { background: rgba(176,0,32,.08); color: #b00020; }
+        .badge-ok { background: rgba(22,163,74,.08); color: #15803d; }
       `}</style>
       <div className="page">
         <div className="wrap">
@@ -61,19 +64,33 @@ export default function MorososPage() {
               <table>
                 <thead>
                   <tr>
+                    <th>#</th>
                     <th>Unidad</th>
                     <th>Propietario</th>
                     <th>Deuda total</th>
+                    <th>Días / vencimiento</th>
+                    <th>Último pago</th>
+                    <th>Estado</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((row) => (
-                    <tr key={row.unidad_id}>
-                      <td>{row.unidad}</td>
-                      <td>{row.propietario}</td>
-                      <td className="money">{formatMoney(row.deuda_total)}</td>
-                    </tr>
-                  ))}
+                  {rows.map((row, idx) => {
+                    const dias = row.dias_atraso;
+                    const overdue = dias !== null && dias > 0;
+                    const diasLabel = dias === null ? "—" : dias > 0 ? `${dias}d vencido` : dias === 0 ? "vence hoy" : `${-dias}d restantes`;
+                    const estado = dias === null ? "—" : overdue ? "Vencido" : "Al día";
+                    return (
+                      <tr key={row.unidad_id}>
+                        <td style={{ color: "#94a3b8", fontFamily: "Space Mono,monospace", fontSize: 11 }}>{idx + 1}</td>
+                        <td>{row.unidad}</td>
+                        <td>{row.propietario}</td>
+                        <td className="money">{formatMoney(row.deuda_total)}</td>
+                        <td style={{ fontFamily: "Space Mono,monospace", fontSize: 12, color: overdue ? "#b00020" : "#15803d" }}>{diasLabel}</td>
+                        <td style={{ fontSize: 12, color: "#64748b" }}>{row.ultimo_pago || "—"}</td>
+                        <td><span className={`badge${overdue ? " badge-overdue" : " badge-ok"}`}>{estado}</span></td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
