@@ -9,6 +9,7 @@ flask-cors = "*"
 gunicorn = "*"
 supabase = "*"
 python-dotenv = "*"
+reportlab = "*"
 
 [dev-packages]
 

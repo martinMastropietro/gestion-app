@@ -14,6 +14,7 @@ from modules.inquilino.routes import inquilino_bp
 from modules.overview.routes import overview_bp
 from modules.pagos.routes import pagos_bp
 from modules.unidades.routes import unidades_bp
+from modules.reportes.routes import reportes_bp
 
 load_dotenv()
 
@@ -32,6 +33,7 @@ app.register_blueprint(expensas_bp, url_prefix="/api/expensas")
 app.register_blueprint(pagos_bp, url_prefix="/api/pagos")
 app.register_blueprint(overview_bp, url_prefix="/api/overview")
 app.register_blueprint(inquilino_bp, url_prefix="/api/inquilino")
+app.register_blueprint(reportes_bp, url_prefix="/api/reportes")
 
 
 def get_supabase():
