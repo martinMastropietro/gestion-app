@@ -12,6 +12,7 @@ from modules.common import (
     period_less_than,
     to_decimal,
 )
+from modules.configuracion.routes import get_config_value
 
 expensas_bp = Blueprint("expensas", __name__)
 expensas_calculation_lock = Lock()
@@ -117,10 +118,14 @@ def build_expensas_payload(month, year):
     total_gastos = sum((to_decimal(gasto.get("monto")) for gasto in gastos), Decimal("0"))
     total_superficie = sum((superficie for _, superficie in superficies), Decimal("0"))
 
+    comision_porcentaje = get_config_value("comision_porcentaje")
+    monto_comision = (total_gastos * comision_porcentaje / Decimal("100")).quantize(Decimal("0.01"))
+    total_distribuible = total_gastos + monto_comision
+
     expensas = []
     for unidad, superficie in superficies:
         proporcion = superficie / total_superficie if total_superficie else Decimal("0")
-        monto_comun = total_gastos * proporcion
+        monto_comun = total_distribuible * proporcion
         monto_particular = gastos_part_by_unit.get(unidad.get("id"), Decimal("0"))
         monto = monto_comun + monto_particular
         expensas.append(
@@ -142,6 +147,9 @@ def build_expensas_payload(month, year):
         "mes": month,
         "year": year,
         "total_gastos": money(total_gastos),
+        "comision_porcentaje": float(comision_porcentaje),
+        "monto_comision": money(monto_comision),
+        "total_distribuible": money(total_distribuible),
         "total_superficie": money(total_superficie),
         "expensas": expensas,
     }, None

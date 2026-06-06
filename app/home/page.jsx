@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { label: "Expensas", href: "/expensas" },
   { label: "Pagos", href: "/pagos" },
   { label: "Morosos", href: "/morosos" },
+  { label: "Configuración", href: "/configuracion" },
 ];
 
 export default function HomePage() {
@@ -165,7 +166,9 @@ export default function HomePage() {
                     <th>#</th>
                     <th>Unidad</th>
                     <th>Propietario</th>
-                    <th>Deuda total</th>
+                    <th>Deuda</th>
+                    <th>Mora</th>
+                    <th>Total c/mora</th>
                     <th>Días / vencimiento</th>
                     <th>Último pago</th>
                     <th>Estado</th>
@@ -189,6 +192,8 @@ export default function HomePage() {
                         <td><span className="badge">{moroso.unidad}</span></td>
                         <td>{moroso.propietario}</td>
                         <td className="money">{formatMoney(moroso.deuda_total)}</td>
+                        <td className="money" style={{ color: Number(moroso.mora) > 0 ? "#b00020" : "#94a3b8" }}>{formatMoney(moroso.mora)}</td>
+                        <td className="money">{formatMoney(moroso.deuda_con_mora)}</td>
                         <td style={{ fontFamily: "Space Mono, monospace", fontSize: 12, color: overdue ? "#b00020" : "#15803d" }}>{diasLabel}</td>
                         <td style={{ fontSize: 12, color: "#64748b" }}>{moroso.ultimo_pago || "—"}</td>
                         <td><span className={`badge${overdue ? " badge-overdue" : " badge-ok"}`}>{estado}</span></td>

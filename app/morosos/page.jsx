@@ -67,7 +67,9 @@ export default function MorososPage() {
                     <th>#</th>
                     <th>Unidad</th>
                     <th>Propietario</th>
-                    <th>Deuda total</th>
+                    <th>Deuda</th>
+                    <th>Mora</th>
+                    <th>Total c/mora</th>
                     <th>Días / vencimiento</th>
                     <th>Último pago</th>
                     <th>Estado</th>
@@ -85,6 +87,8 @@ export default function MorososPage() {
                         <td>{row.unidad}</td>
                         <td>{row.propietario}</td>
                         <td className="money">{formatMoney(row.deuda_total)}</td>
+                        <td className="money" style={{ color: Number(row.mora) > 0 ? "#b00020" : "#94a3b8" }}>{formatMoney(row.mora)}</td>
+                        <td className="money">{formatMoney(row.deuda_con_mora)}</td>
                         <td style={{ fontFamily: "Space Mono,monospace", fontSize: 12, color: overdue ? "#b00020" : "#15803d" }}>{diasLabel}</td>
                         <td style={{ fontSize: 12, color: "#64748b" }}>{row.ultimo_pago || "—"}</td>
                         <td><span className={`badge${overdue ? " badge-overdue" : " badge-ok"}`}>{estado}</span></td>

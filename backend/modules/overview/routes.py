@@ -6,6 +6,7 @@ from flask import Blueprint, jsonify
 
 from database import supabase
 from modules.common import execute_with_retry, last_day_for_period, money, to_decimal
+from modules.configuracion.routes import get_config_value
 
 overview_bp = Blueprint("overview", __name__)
 
@@ -131,6 +132,7 @@ def morosos_urgencia():
             ultimo_pago[uid] = item.get("fecha_pago")  # already ordered asc
 
         today = date.today()
+        mora_porcentaje = get_config_value("mora_porcentaje_mensual")
         rows = []
         for unidad in unidades_res.data or []:
             uid = unidad["id"]
@@ -140,17 +142,28 @@ def morosos_urgencia():
             remaining_pagos = total_pagos[uid]
             oldest_unpaid = None
             total_expensas = Decimal("0")
+            mora = Decimal("0")
 
             for exp in unit_expensas:
                 monto = to_decimal(exp.get("monto"))
                 total_expensas += monto
 
-                if oldest_unpaid is None:
-                    if remaining_pagos >= monto:
-                        remaining_pagos -= monto
-                    else:
+                if remaining_pagos >= monto:
+                    remaining_pagos -= monto
+                else:
+                    saldo = monto - remaining_pagos
+                    remaining_pagos = Decimal("0")
+
+                    if oldest_unpaid is None:
                         oldest_unpaid = (exp["mes"], exp["year"])
-                        remaining_pagos = Decimal("0")
+
+                    due_date = last_day_for_period(exp["mes"], exp["year"])
+                    if today > due_date and mora_porcentaje > 0:
+                        months_overdue = max(
+                            0,
+                            (today.year * 12 + today.month) - (exp["year"] * 12 + exp["mes"]),
+                        )
+                        mora += saldo * mora_porcentaje / Decimal("100") * months_overdue
 
             deuda = max(total_expensas - total_pagos[uid], Decimal("0"))
             if deuda == 0:
@@ -169,6 +182,8 @@ def morosos_urgencia():
                 "unidad": f'{unidad.get("piso")}{unidad.get("apartamento")}',
                 "propietario": unidad.get("nombre_responsable"),
                 "deuda_total": money(deuda),
+                "mora": money(mora),
+                "deuda_con_mora": money(deuda + mora),
                 "periodo_mas_antiguo": {
                     "mes": oldest_unpaid[0] if oldest_unpaid else None,
                     "year": oldest_unpaid[1] if oldest_unpaid else None,

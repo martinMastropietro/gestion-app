@@ -112,6 +112,16 @@ export default function ExpensasPage() {
                   <div className="label">Total gastos</div>
                   <div className="value">${fmt(calculo.total_gastos)}</div>
                 </div>
+                {calculo.comision_porcentaje > 0 && (
+                  <div className="card">
+                    <div className="label">Comisión adm. ({calculo.comision_porcentaje}%)</div>
+                    <div className="value">${fmt(calculo.monto_comision)}</div>
+                  </div>
+                )}
+                <div className="card" style={{ background: calculo.comision_porcentaje > 0 ? "#1e3a8a" : undefined, color: calculo.comision_porcentaje > 0 ? "#fff" : undefined }}>
+                  <div className="label" style={{ color: calculo.comision_porcentaje > 0 ? "#bfdbfe" : undefined }}>Total distribuible</div>
+                  <div className="value">${fmt(calculo.total_distribuible)}</div>
+                </div>
                 <div className="card">
                   <div className="label">Superficie total</div>
                   <div className="value">{fmt(calculo.total_superficie)} m²</div>

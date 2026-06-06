@@ -143,7 +143,7 @@ export default function InquilinoPage() {
       remaining = Math.max(remaining - pagado, 0);
       const saldo = monto - pagado;
       const estado = pagado >= monto ? "saldado" : pagado > 0 ? "parcial" : "pendiente";
-      return { ...exp, pagado, saldo, estado };
+      return { ...exp, pagado, saldo, estado, mora: Number(exp.mora ?? 0) };
     }).reverse();
   }
 
@@ -275,8 +275,22 @@ export default function InquilinoPage() {
                 <div className="card accent">
                   <div className="card-label">Deuda total</div>
                   <div className="card-value">{formatMoney(deudaTotal)}</div>
-                  <div className="card-sub">Saldo pendiente</div>
+                  <div className="card-sub">Saldo pendiente sin mora</div>
                 </div>
+                {Number(data?.mora_total) > 0 && (
+                  <div className="card" style={{ borderColor: "rgba(176,0,32,.25)" }}>
+                    <div className="card-label" style={{ color: "#b00020" }}>Mora acumulada ({data?.mora_porcentaje_mensual}% / mes)</div>
+                    <div className="card-value" style={{ color: "#b00020" }}>{formatMoney(data?.mora_total)}</div>
+                    <div className="card-sub">Interés por atraso</div>
+                  </div>
+                )}
+                {Number(data?.mora_total) > 0 && (
+                  <div className="card" style={{ background: "#1e3a8a", color: "#fff" }}>
+                    <div className="card-label" style={{ color: "#bfdbfe" }}>Total con mora</div>
+                    <div className="card-value">{formatMoney(data?.deuda_con_mora)}</div>
+                    <div className="card-sub" style={{ color: "rgba(255,255,255,.6)" }}>Deuda + intereses</div>
+                  </div>
+                )}
                 <div className="card">
                   <div className="card-label">Expensas registradas</div>
                   <div className="card-value">{expensas.length}</div>
@@ -348,6 +362,7 @@ export default function InquilinoPage() {
                         <th>Expensa</th>
                         <th>Pagado</th>
                         <th>Saldo</th>
+                        <th>Mora</th>
                         <th>Estado</th>
                       </tr>
                     </thead>
@@ -369,6 +384,9 @@ export default function InquilinoPage() {
                             </td>
                             <td style={{ fontFamily: "Space Mono,monospace", fontSize: 12, color: p.saldo > 0 ? "#b00020" : "#64748b" }}>
                               {formatMoney(p.saldo)}
+                            </td>
+                            <td style={{ fontFamily: "Space Mono,monospace", fontSize: 12, color: p.mora > 0 ? "#b00020" : "#94a3b8" }}>
+                              {p.mora > 0 ? formatMoney(p.mora) : "—"}
                             </td>
                             <td>
                               <span style={{ display: "inline-block", padding: "3px 9px", borderRadius: 999, fontSize: 11, fontFamily: "Space Mono,monospace", background: cfg.bg, color: cfg.color, border: `0.5px solid ${cfg.border}` }}>
