@@ -67,7 +67,7 @@ export default function MorososPage() {
                     <th>#</th>
                     <th>Unidad</th>
                     <th>Propietario</th>
-                    <th>Deuda total</th>
+                    <th>Deuda</th>
                     <th>Días / vencimiento</th>
                     <th>Último pago</th>
                     <th>Estado</th>

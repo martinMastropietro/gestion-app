@@ -7,12 +7,14 @@ import { apiRequest } from "@/lib/api";
 
 const NAV_ITEMS = [
   { label: "Overview", href: "/home" },
-  { label: "Residentes", href: "/unidades" },
+  { label: "Unidades", href: "/unidades" },
   { label: "Gastos", href: "/gastos" },
+  { label: "G. Particulares", href: "/gastos-particulares" },
   { label: "Expensas", href: "/expensas" },
   { label: "Pagos", href: "/pagos" },
   { label: "Morosos", href: "/morosos" },
   { label: "Reportes", href: "/reportes" },
+  { label: "Configuración", href: "/configuracion" },
 ];
 
 export default function HomePage() {
@@ -138,7 +140,7 @@ export default function HomePage() {
               <div className="sublabel">Suma acumulada registrada</div>
             </div>
             <div className="card">
-              <div className="label">Residentes</div>
+              <div className="label">Unidades</div>
               <div className="value">{summary?.total_unidades ?? 0}</div>
               <div className="sublabel">Unidades registradas</div>
             </div>
@@ -165,7 +167,7 @@ export default function HomePage() {
                     <th>#</th>
                     <th>Unidad</th>
                     <th>Propietario</th>
-                    <th>Deuda total</th>
+                    <th>Deuda</th>
                     <th>Días / vencimiento</th>
                     <th>Último pago</th>
                     <th>Estado</th>

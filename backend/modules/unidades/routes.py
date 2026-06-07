@@ -97,18 +97,16 @@ def _apply_codigo_acceso(codigo, unidad_id):
 
     supabase.table("users").update({"unidad_id": unidad_id, "codigo_acceso": None}).eq("id", user["id"]).execute()
 
-    # Copy inquilino profile to unidad contact fields
-    unidad_update = {}
-    if user.get("nombre"):
-        unidad_update["nombre_responsable"] = user["nombre"]
-    if user.get("dni"):
-        unidad_update["dni_responsable"] = user["dni"]
-    if user.get("email"):
-        unidad_update["mail_responsable"] = user["email"]
-    if user.get("telefono"):
-        unidad_update["tel_responsable"] = user["telefono"]
-    if unidad_update:
-        supabase.table("unidades").update(unidad_update).eq("id", unidad_id).execute()
+    # Copy inquilino profile to unidad contact fields.
+    # Always overwrite all 4 fields so stale data from a previous
+    # manual entry or old inquilino never leaks through.
+    unidad_update = {
+        "nombre_responsable": user.get("nombre") or None,
+        "dni_responsable":    user.get("dni") or None,
+        "mail_responsable":   user.get("email") or None,
+        "tel_responsable":    user.get("telefono") or None,
+    }
+    supabase.table("unidades").update(unidad_update).eq("id", unidad_id).execute()
 
     return True, None
 
