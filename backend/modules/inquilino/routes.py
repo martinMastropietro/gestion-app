@@ -1,5 +1,3 @@
-from collections import defaultdict
-from datetime import date
 from decimal import Decimal
 
 from flask import Blueprint, jsonify, request
@@ -7,14 +5,12 @@ from flask import Blueprint, jsonify, request
 from database import supabase
 from modules.common import (
     execute_with_retry,
-    last_day_for_period,
     money,
     parse_iso_date,
     parse_positive_amount,
     require_role,
     to_decimal,
 )
-from modules.configuracion.routes import get_config_value
 
 inquilino_bp = Blueprint("inquilino", __name__)
 
@@ -52,50 +48,13 @@ def get_mi_deuda():
         pagos = pagos_res.data or []
 
         total_expensas = sum(to_decimal(e.get("monto")) for e in expensas)
-        total_pagos_monto = sum(to_decimal(p.get("monto")) for p in pagos)
-        deuda_total = max(total_expensas - total_pagos_monto, Decimal("0"))
-
-        # Mora: FIFO allocation per period
-        mora_porcentaje = get_config_value("mora_porcentaje_mensual")
-        today = date.today()
-        sorted_expensas = sorted(expensas, key=lambda e: (e["year"], e["mes"]))
-        remaining = total_pagos_monto
-        mora_total = Decimal("0")
-        expensas_con_mora = []
-
-        for exp in sorted_expensas:
-            monto = to_decimal(exp.get("monto"))
-            if remaining >= monto:
-                remaining -= monto
-                saldo = Decimal("0")
-                mora_periodo = Decimal("0")
-            else:
-                saldo = monto - remaining
-                remaining = Decimal("0")
-                due_date = last_day_for_period(exp["mes"], exp["year"])
-                if today > due_date and mora_porcentaje > 0:
-                    months_overdue = max(
-                        0,
-                        (today.year * 12 + today.month) - (exp["year"] * 12 + exp["mes"]),
-                    )
-                    mora_periodo = saldo * mora_porcentaje / Decimal("100") * months_overdue
-                else:
-                    mora_periodo = Decimal("0")
-                mora_total += mora_periodo
-
-            expensas_con_mora.append({
-                **exp,
-                "monto": money(exp.get("monto")),
-                "mora": money(mora_periodo),
-            })
+        total_pagos = sum(to_decimal(p.get("monto")) for p in pagos)
+        deuda_total = max(total_expensas - total_pagos, Decimal("0"))
 
         return jsonify({
             "unidad": unidad,
             "deuda_total": money(deuda_total),
-            "mora_total": money(mora_total),
-            "deuda_con_mora": money(deuda_total + mora_total),
-            "mora_porcentaje_mensual": float(mora_porcentaje),
-            "expensas": expensas_con_mora,
+            "expensas": [{**e, "monto": money(e.get("monto"))} for e in expensas],
             "pagos": [{**p, "monto": money(p.get("monto"))} for p in pagos],
         }), 200
     except Exception as e:

@@ -5,8 +5,8 @@ import Link from "next/link";
 import { apiRequest } from "@/lib/api";
 
 export default function ConfiguracionPage() {
-  const [config, setConfig] = useState({ comision_porcentaje: 0, mora_porcentaje_mensual: 0 });
-  const [form, setForm] = useState({ comision_porcentaje: "", mora_porcentaje_mensual: "" });
+  const [config, setConfig] = useState({ comision_porcentaje: 0 });
+  const [form, setForm] = useState({ comision_porcentaje: "" });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
@@ -18,7 +18,6 @@ export default function ConfiguracionPage() {
         setConfig(data);
         setForm({
           comision_porcentaje: String(data.comision_porcentaje ?? 0),
-          mora_porcentaje_mensual: String(data.mora_porcentaje_mensual ?? 0),
         });
       })
       .catch((err) => setError(err.message))
@@ -35,7 +34,6 @@ export default function ConfiguracionPage() {
         method: "PATCH",
         body: JSON.stringify({
           comision_porcentaje: Number(form.comision_porcentaje),
-          mora_porcentaje_mensual: Number(form.mora_porcentaje_mensual),
         }),
       });
       setConfig(updated);
@@ -99,10 +97,6 @@ export default function ConfiguracionPage() {
                     <div className="current-label">Comisión administrador</div>
                     <div className="current-value">{config.comision_porcentaje ?? 0}%</div>
                   </div>
-                  <div className="current-item">
-                    <div className="current-label">Mora mensual</div>
-                    <div className="current-value">{config.mora_porcentaje_mensual ?? 0}%</div>
-                  </div>
                 </div>
               </div>
 
@@ -127,25 +121,6 @@ export default function ConfiguracionPage() {
                     <span className="pct">%</span>
                   </div>
                   <div className="hint">Se suma al total de gastos comunes antes de distribuir entre unidades. Ej: 5 = 5%.</div>
-                </div>
-
-                <div className="field">
-                  <label htmlFor="mora">Mora mensual sobre saldo vencido (%)</label>
-                  <div className="input-row">
-                    <input
-                      id="mora"
-                      className="input"
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.01"
-                      value={form.mora_porcentaje_mensual}
-                      onChange={(e) => setForm((f) => ({ ...f, mora_porcentaje_mensual: e.target.value }))}
-                      required
-                    />
-                    <span className="pct">% / mes</span>
-                  </div>
-                  <div className="hint">Se aplica sobre el saldo impago de cada período vencido. Ej: 2 = 2% por mes de atraso.</div>
                 </div>
 
                 <div className="actions">

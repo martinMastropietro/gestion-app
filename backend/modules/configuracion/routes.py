@@ -7,7 +7,7 @@ from database import supabase
 
 configuracion_bp = Blueprint("configuracion", __name__)
 
-ALLOWED_KEYS = {"comision_porcentaje", "mora_porcentaje_mensual"}
+ALLOWED_KEYS = {"comision_porcentaje"}
 
 
 def get_config_value(clave, default=Decimal("0")):
