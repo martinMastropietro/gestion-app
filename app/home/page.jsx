@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { label: "Expensas", href: "/expensas" },
   { label: "Pagos", href: "/pagos" },
   { label: "Morosos", href: "/morosos" },
+  { label: "Configuración", href: "/configuracion" },
 ];
 
 export default function HomePage() {
@@ -165,7 +166,7 @@ export default function HomePage() {
                     <th>#</th>
                     <th>Unidad</th>
                     <th>Propietario</th>
-                    <th>Deuda total</th>
+                    <th>Deuda</th>
                     <th>Días / vencimiento</th>
                     <th>Último pago</th>
                     <th>Estado</th>

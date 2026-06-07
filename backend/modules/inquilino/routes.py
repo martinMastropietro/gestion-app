@@ -1,4 +1,3 @@
-from collections import defaultdict
 from decimal import Decimal
 
 from flask import Blueprint, jsonify, request
@@ -6,7 +5,6 @@ from flask import Blueprint, jsonify, request
 from database import supabase
 from modules.common import (
     execute_with_retry,
-    last_day_for_period,
     money,
     parse_iso_date,
     parse_positive_amount,
