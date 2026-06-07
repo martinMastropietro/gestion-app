@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { label: "Expensas", href: "/expensas" },
   { label: "Pagos", href: "/pagos" },
   { label: "Morosos", href: "/morosos" },
+  { label: "Reportes", href: "/reportes" },
   { label: "Configuración", href: "/configuracion" },
 ];
 
