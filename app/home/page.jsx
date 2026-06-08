@@ -70,8 +70,8 @@ export default function HomePage() {
 
       <div className="topbar">
         <div>
-          <div className="tag">Overview</div>
-          <h1 className="title">Panel de Control</h1>
+          <div className="tag">Administración</div>
+          <h1 className="title">Resumen General</h1>
         </div>
         <div className="status">{isLoading ? "Cargando..." : "Operativo"}</div>
       </div>

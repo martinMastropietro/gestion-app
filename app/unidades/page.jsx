@@ -36,7 +36,7 @@ export default function UnidadesPage() {
   const [unidades, setUnidades] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
-  const [editingHasInquilino, setEditingHasInquilino] = useState(false);
+  const [editingHasPropietario, setEditingHasPropietario] = useState(false);
   const [codigoInput, setCodigoInput] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [error, setError] = useState("");
@@ -58,7 +58,7 @@ export default function UnidadesPage() {
 
   const openCreate = () => {
     setEditingId(null);
-    setEditingHasInquilino(false);
+    setEditingHasPropietario(false);
     setCodigoInput("");
     setForm(emptyForm);
     setError("");
@@ -67,7 +67,7 @@ export default function UnidadesPage() {
 
   const openEdit = (u) => {
     setEditingId(u.id);
-    setEditingHasInquilino(!!u.tiene_inquilino);
+    setEditingHasPropietario(!!u.tiene_inquilino);
     setCodigoInput("");
     setForm({
       piso: u.piso ?? "", apartamento: u.apartamento || "",
@@ -259,7 +259,7 @@ export default function UnidadesPage() {
               </div>
               
               <div className="field">
-                <label className="label">Código de Acceso (Inquilino)</label>
+                <label className="label">Código de Acceso (asociar propietario)</label>
                 <input 
                   className="input" 
                   placeholder="Opcional" 
@@ -271,13 +271,13 @@ export default function UnidadesPage() {
 
               <div className="field">
                 <label className="label">Nombre Responsable</label>
-                <input className="input" value={form.nombre_responsable} onChange={(e) => updateField("nombre_responsable", e.target.value)} disabled={editingHasInquilino} />
+                <input className="input" value={form.nombre_responsable} onChange={(e) => updateField("nombre_responsable", e.target.value)} disabled={editingHasPropietario} />
               </div>
 
               <div className="form-grid">
                 <div className="field">
                   <label className="label">DNI</label>
-                  <input className="input" value={form.dni_responsable} onChange={(e) => updateField("dni_responsable", e.target.value)} disabled={editingHasInquilino} />
+                  <input className="input" value={form.dni_responsable} onChange={(e) => updateField("dni_responsable", e.target.value)} disabled={editingHasPropietario} />
                 </div>
                 <div className="field">
                   <label className="label">Superficie m²</label>

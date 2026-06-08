@@ -18,7 +18,22 @@ export default function ExpensasPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRecalculating, setIsRecalculating] = useState(false);
 
-  useEffect(() => { calcular(current); }, []);
+  useEffect(() => { buscarPeriodo(current); }, []);
+
+  async function buscarPeriodo(target = period) {
+    setError("");
+    setIsLoading(true);
+    try {
+      const params = new URLSearchParams({ mes: target.mes, year: target.year });
+      const data = await apiRequest(`/api/expensas/?${params.toString()}`);
+      setCalculo(data);
+    } catch (err) {
+      setError(err.message);
+      setCalculo(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   async function calcular(target = period) {
     setError("");
@@ -42,7 +57,8 @@ export default function ExpensasPage() {
     return Number(value || 0).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
-  const maxMonto = calculo ? Math.max(...calculo.expensas.map((item) => Number(item.monto || 0)), 1) : 1;
+  const expensas = calculo?.expensas || [];
+  const maxMonto = Math.max(...expensas.map((item) => Number(item.monto || 0)), 1);
 
   return (
     <DashboardLayout>
@@ -92,7 +108,7 @@ export default function ExpensasPage() {
         </div>
         <button className="btn-primary" onClick={() => calcular()} disabled={isRecalculating}>
           <Calculator size={18} />
-          {isRecalculating ? "Calculando..." : "Recalcular"}
+          {isRecalculating ? "Calculando..." : "Calcular"}
         </button>
       </div>
 
@@ -105,7 +121,7 @@ export default function ExpensasPage() {
           <span className="filter-label">Año</span>
           <input className="filter-input" type="number" min="2000" value={period.year} onChange={(e) => setPeriod(p => ({ ...p, year: e.target.value }))} />
         </div>
-        <button className="btn-primary" style={{ padding: "8px 16px", fontSize: "13px" }} onClick={() => calcular(period)}>
+        <button className="btn-primary" style={{ padding: "8px 16px", fontSize: "13px" }} onClick={() => buscarPeriodo(period)}>
           <Search size={14} />
           Ver Periodo
         </button>
@@ -119,8 +135,8 @@ export default function ExpensasPage() {
         <>
           <div className="summary-row">
             <div className="summary-item accent">
-              <div className="summary-label">Total Gastos Periodo</div>
-              <div className="summary-value">${fmt(calculo.total_gastos)}</div>
+              <div className="summary-label">Total Expensas Periodo</div>
+              <div className="summary-value">${fmt(calculo.total_expensas ?? calculo.total_gastos)}</div>
             </div>
             {calculo.comision_porcentaje > 0 && (
               <div className="summary-item">
@@ -156,7 +172,7 @@ export default function ExpensasPage() {
                 </tr>
               </thead>
               <tbody>
-                {calculo.expensas.map((item) => {
+                {expensas.map((item) => {
                   const barWidth = (Number(item.monto || 0) / maxMonto) * 100;
                   return (
                     <tr key={item.unidad_id}>
@@ -173,6 +189,11 @@ export default function ExpensasPage() {
                 })}
               </tbody>
             </table>
+            {expensas.length === 0 && (
+              <div style={{ padding: "32px", textAlign: "center", color: "#94a3b8" }}>
+                No hay expensas calculadas para este periodo.
+              </div>
+            )}
           </div>
         </>
       ) : (
