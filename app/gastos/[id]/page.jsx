@@ -261,7 +261,6 @@ export default function GastoDetailPage() {
           ) : gasto ? (
             <div className="gd-card">
               <div className="gd-card-header">
-                <div className="gd-card-tag">Gasto #{id}</div>
                 <div className="gd-card-title">{gasto.descripcion}</div>
                 <div className="gd-card-monto">
                   ${Number(gasto.monto).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -279,10 +278,6 @@ export default function GastoDetailPage() {
                   <div className="gd-info-item">
                     <div className="gd-info-label">Estado</div>
                     <div className="gd-info-val">Activo</div>
-                  </div>
-                  <div className="gd-info-item">
-                    <div className="gd-info-label">ID</div>
-                    <div className="gd-info-val" style={{ fontFamily: "'Space Mono', monospace", fontSize: "13px" }}>#{id}</div>
                   </div>
                 </div>
 

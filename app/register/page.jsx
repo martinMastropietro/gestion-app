@@ -404,7 +404,7 @@ export default function RegisterPage() {
                   <div className="bp-step">
                     <span className="step-num">03</span>
                     <div className="step-text">
-                      <strong>Vinculá a tus inquilinos</strong>
+                      <strong>Vinculá a tus propietarios</strong>
                       Con el código que ellos te comparten.
                     </div>
                   </div>
@@ -458,7 +458,7 @@ export default function RegisterPage() {
                   </label>
                   <label className={`bp-role-opt${rol === "inquilino" ? " selected" : ""}`}>
                     <input type="radio" value="inquilino" checked={rol === "inquilino"} onChange={() => setRol("inquilino")} />
-                    <span className="bp-role-opt-title">Inquilino</span>
+                    <span className="bp-role-opt-title">Propietario</span>
                     <span className="bp-role-opt-sub">Vivo en el edificio</span>
                   </label>
                 </div>

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiRequest } from "@/lib/api";
 
-export default function InquilinoPage() {
+export default function PropietarioPage() {
   const router = useRouter();
   const [userId, setUserId] = useState(null);
   const [data, setData] = useState(null);
@@ -232,7 +232,7 @@ export default function InquilinoPage() {
 
       <div className="root">
         <div className="topbar">
-          <span className="logo">CONSORCIOS · Inquilino</span>
+          <span className="logo">CONSORCIOS · Propietario</span>
           <button className="logout" onClick={handleLogout}>cerrar sesión</button>
         </div>
 

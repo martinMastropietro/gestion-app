@@ -5,6 +5,7 @@ from flask import Blueprint, jsonify, request
 
 from database import supabase
 from modules.common import (
+    execute_with_retry,
     first_day_for_period,
     money,
     next_period,
@@ -123,11 +124,13 @@ def build_expensas_payload(month, year):
     total_distribuible = total_gastos + monto_comision
 
     expensas = []
+    total_expensas = Decimal("0")
     for unidad, superficie in superficies:
         proporcion = superficie / total_superficie if total_superficie else Decimal("0")
         monto_comun = total_distribuible * proporcion
         monto_particular = gastos_part_by_unit.get(unidad.get("id"), Decimal("0"))
         monto = monto_comun + monto_particular
+        total_expensas += monto
         expensas.append(
             {
                 "unidad_id": unidad.get("id"),
@@ -150,9 +153,58 @@ def build_expensas_payload(month, year):
         "comision_porcentaje": float(comision_porcentaje),
         "monto_comision": money(monto_comision),
         "total_distribuible": money(total_distribuible),
+        "total_expensas": money(total_expensas),
         "total_superficie": money(total_superficie),
         "expensas": expensas,
     }, None
+
+
+def build_persisted_expensas_payload(month, year):
+    expensas_res = execute_with_retry(
+        supabase.table("expensas")
+        .select(
+            "id, unidad_id, mes, year, monto, superficie, porcentaje, "
+            "unidades(piso, apartamento, nombre_responsable)"
+        )
+        .eq("mes", month)
+        .eq("year", year)
+    )
+
+    expensas = []
+    total_expensas = Decimal("0")
+    total_superficie = Decimal("0")
+
+    for item in expensas_res.data or []:
+        unidad = item.get("unidades") or {}
+        monto = to_decimal(item.get("monto"))
+        superficie = to_decimal(item.get("superficie"))
+        total_expensas += monto
+        total_superficie += superficie
+
+        expensas.append(
+            {
+                "id": item.get("id"),
+                "unidad_id": item.get("unidad_id"),
+                "piso": unidad.get("piso"),
+                "apartamento": unidad.get("apartamento"),
+                "nombre_responsable": unidad.get("nombre_responsable"),
+                "superficie": money(superficie),
+                "porcentaje": float(to_decimal(item.get("porcentaje"))),
+                "monto": money(monto),
+                "mes": month,
+                "year": year,
+            }
+        )
+
+    expensas.sort(key=lambda item: (item.get("piso") or 0, item.get("apartamento") or ""))
+
+    return {
+        "mes": month,
+        "year": year,
+        "total_expensas": money(total_expensas),
+        "total_superficie": money(total_superficie),
+        "expensas": expensas,
+    }
 
 
 @expensas_bp.route("/calcular", methods=["GET", "POST"])
@@ -200,9 +252,6 @@ def listar_expensas():
         return jsonify({"error": error}), 400
 
     try:
-        data, build_error = build_expensas_payload(month, year)
-        if build_error:
-            return jsonify({"error": build_error}), 400
-        return jsonify(data), 200
+        return jsonify(build_persisted_expensas_payload(month, year)), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

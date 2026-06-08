@@ -17,7 +17,7 @@ import {
 import "./Sidebar.css";
 
 const NAV_ITEMS = [
-  { label: "Overview", href: "/home", icon: LayoutDashboard },
+  { label: "Resumen", href: "/home", icon: LayoutDashboard },
   { label: "Unidades", href: "/unidades", icon: Users },
   { label: "Gastos", href: "/gastos", icon: Receipt },
   { label: "G. Particulares", href: "/gastos-particulares", icon: FileText },
