@@ -9,17 +9,23 @@ import {
   CreditCard, 
   AlertTriangle, 
   LogOut,
-  Building2
+  Building2,
+  Settings,
+  TrendingUp,
+  FileText
 } from "lucide-react";
 import "./Sidebar.css";
 
 const NAV_ITEMS = [
   { label: "Overview", href: "/home", icon: LayoutDashboard },
-  { label: "Residentes", href: "/unidades", icon: Users },
+  { label: "Unidades", href: "/unidades", icon: Users },
   { label: "Gastos", href: "/gastos", icon: Receipt },
+  { label: "G. Particulares", href: "/gastos-particulares", icon: FileText },
   { label: "Expensas", href: "/expensas", icon: Receipt },
   { label: "Pagos", href: "/pagos", icon: CreditCard },
   { label: "Morosos", href: "/morosos", icon: AlertTriangle },
+  { label: "Reportes", href: "/reportes", icon: TrendingUp },
+  { label: "Configuración", href: "/configuracion", icon: Settings },
 ];
 
 export default function Sidebar({ userProfile }) {

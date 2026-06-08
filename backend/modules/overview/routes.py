@@ -145,12 +145,12 @@ def morosos_urgencia():
                 monto = to_decimal(exp.get("monto"))
                 total_expensas += monto
 
-                if oldest_unpaid is None:
-                    if remaining_pagos >= monto:
-                        remaining_pagos -= monto
-                    else:
+                if remaining_pagos >= monto:
+                    remaining_pagos -= monto
+                else:
+                    remaining_pagos = Decimal("0")
+                    if oldest_unpaid is None:
                         oldest_unpaid = (exp["mes"], exp["year"])
-                        remaining_pagos = Decimal("0")
 
             deuda = max(total_expensas - total_pagos[uid], Decimal("0"))
             if deuda == 0:

@@ -122,6 +122,18 @@ export default function ExpensasPage() {
               <div className="summary-label">Total Gastos Periodo</div>
               <div className="summary-value">${fmt(calculo.total_gastos)}</div>
             </div>
+            {calculo.comision_porcentaje > 0 && (
+              <div className="summary-item">
+                <div className="summary-label">Comisión adm. ({calculo.comision_porcentaje}%)</div>
+                <div className="summary-value">${fmt(calculo.monto_comision)}</div>
+              </div>
+            )}
+            {calculo.comision_porcentaje > 0 && (
+              <div className="summary-item" style={{ background: "#f0fdf4", borderColor: "#bbf7d0" }}>
+                <div className="summary-label" style={{ color: "#16a34a" }}>Total distribuible</div>
+                <div className="summary-value" style={{ color: "#16a34a" }}>${fmt(calculo.total_distribuible)}</div>
+              </div>
+            )}
             <div className="summary-item">
               <div className="summary-label">Sup. Total Consorcio</div>
               <div className="summary-value">{fmt(calculo.total_superficie)} m²</div>

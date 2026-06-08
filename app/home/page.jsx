@@ -82,69 +82,71 @@ export default function HomePage() {
         <div className="card accent">
           <div className="label">Gastos comunes</div>
           <div className="value">{formatMoney(summary?.total_gastos)}</div>
-          <div className="sublabel">Registrado este periodo</div>
+          <div className="sublabel">Suma acumulada registrada</div>
         </div>
         <div className="card">
           <div className="label">Unidades</div>
           <div className="value">{summary?.total_unidades ?? 0}</div>
-          <div className="sublabel">Total en el sistema</div>
+          <div className="sublabel">Unidades registradas</div>
         </div>
         <div className="card">
-          <div className="label">Deuda global</div>
+          <div className="label">Deuda total</div>
           <div className="value">{formatMoney(summary?.deuda_total)}</div>
-          <div className="sublabel">Pendiente de cobro</div>
+          <div className="sublabel">Calculada a hoy</div>
         </div>
         <div className="card">
-          <div className="label">Tasa Morosidad</div>
-          <div className="value">
-            {summary?.total_unidades ? Math.round((morosos.length / summary.total_unidades) * 100) : 0}%
-          </div>
-          <div className="sublabel">{morosos.length} unidades con deuda</div>
+          <div className="label">Morosos</div>
+          <div className="value">{morosos.length}</div>
+          <div className="sublabel">Unidades con deuda positiva</div>
         </div>
       </div>
 
       <div className="section-card">
         <div className="section-header">
-          <div className="section-title">Análisis de Morosidad</div>
+          <div className="section-title">Morosos · urgencia</div>
         </div>
         {morosos.length === 0 ? (
-          <div className="empty">No se registran deudas pendientes en el consorcio.</div>
+          <div className="empty">No hay deudas pendientes en el consorcio.</div>
         ) : (
           <div style={{ overflowX: "auto" }}>
             <table>
               <thead>
                 <tr>
+                  <th>#</th>
                   <th>Unidad</th>
                   <th>Propietario</th>
                   <th>Deuda</th>
+                  <th>Días / vencimiento</th>
+                  <th>Último pago</th>
                   <th>Estado</th>
-                  <th>Atraso</th>
                 </tr>
               </thead>
               <tbody>
-                {morosos.map((moroso) => {
+                {morosos.map((moroso, idx) => {
                   const dias = moroso.dias_atraso;
                   const overdue = dias !== null && dias > 0;
                   const diasLabel = dias === null
                     ? "—"
                     : dias > 0
-                      ? `${dias}d`
+                      ? `${dias}d vencido`
                       : dias === 0
-                        ? "Hoy"
-                        : `${-dias}d`;
-                  
+                        ? "vence hoy"
+                        : `${-dias}d restantes`;
+                  const estado = dias === null ? "—" : overdue ? "Vencido" : "Al día";
                   return (
                     <tr key={moroso.unidad_id}>
+                      <td style={{ color: "#94a3b8", fontFamily: "Space Mono, monospace", fontSize: 11 }}>{idx + 1}</td>
                       <td><span className="badge">{moroso.unidad}</span></td>
                       <td>{moroso.propietario}</td>
                       <td className="money">{formatMoney(moroso.deuda_total)}</td>
-                      <td>
-                        <span className={`badge ${overdue ? "badge-overdue" : "badge-ok"}`}>
-                          {overdue ? "Vencido" : "Al día"}
-                        </span>
-                      </td>
                       <td style={{ fontFamily: "Space Mono, monospace", fontSize: 13, color: overdue ? "#ef4444" : "#22c55e" }}>
                         {diasLabel}
+                      </td>
+                      <td style={{ fontSize: 12, color: "#64748b" }}>{moroso.ultimo_pago || "—"}</td>
+                      <td>
+                        <span className={`badge ${overdue ? "badge-overdue" : "badge-ok"}`}>
+                          {estado}
+                        </span>
                       </td>
                     </tr>
                   );
