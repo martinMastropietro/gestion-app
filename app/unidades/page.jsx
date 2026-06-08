@@ -206,7 +206,7 @@ export default function UnidadesPage() {
             <thead>
               <tr>
                 <th>Unidad</th>
-                <th>Responsable</th>
+                <th>Propietario</th>
                 <th>Contacto</th>
                 <th>Superficie</th>
                 <th>Acciones</th>
@@ -270,7 +270,7 @@ export default function UnidadesPage() {
               </div>
 
               <div className="field">
-                <label className="label">Nombre Responsable</label>
+                <label className="label">Nombre Propietario</label>
                 <input className="input" value={form.nombre_responsable} onChange={(e) => updateField("nombre_responsable", e.target.value)} disabled={editingHasPropietario} />
               </div>
 

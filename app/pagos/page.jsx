@@ -112,7 +112,7 @@ export default function PagosPage() {
       <form className="form-card" onSubmit={handleSubmit}>
         <div className="form-grid">
           <div className="field">
-            <label className="label">Unidad / Responsable</label>
+            <label className="label">Unidad / Propietario</label>
             <select className="select" value={form.unidad_id} onChange={(e) => setForm(f => ({ ...f, unidad_id: e.target.value }))} required>
               <option value="">Seleccionar unidad...</option>
               {unidades.map((u) => (
@@ -151,7 +151,7 @@ export default function PagosPage() {
             <thead>
               <tr>
                 <th>Fecha</th>
-                <th>Unidad / Responsable</th>
+                <th>Unidad / Propietario</th>
                 <th>Periodo Aplicado</th>
                 <th>Monto</th>
                 <th>Observación</th>

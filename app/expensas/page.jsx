@@ -165,7 +165,7 @@ export default function ExpensasPage() {
               <thead>
                 <tr>
                   <th>Unidad</th>
-                  <th>Responsable</th>
+                  <th>Propietario</th>
                   <th>Superficie</th>
                   <th>Coeficiente</th>
                   <th>Monto a Pagar</th>
