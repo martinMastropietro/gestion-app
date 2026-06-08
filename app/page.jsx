@@ -4,24 +4,14 @@ export default function LandingPage() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
         .land-root {
           min-height: 100vh;
           display: grid;
           place-items: center;
-          background: #f4f6f9;
-          background-image:
-            linear-gradient(rgba(37,99,235,0.05) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(37,99,235,0.05) 1px, transparent 1px);
-          background-size: 28px 28px;
-          font-family: 'Space Grotesk', sans-serif;
           padding: 24px;
           position: relative;
         }
 
-        /* corner marks */
         .land-corner {
           position: fixed;
           width: 16px; height: 16px;
@@ -42,12 +32,11 @@ export default function LandingPage() {
           gap: 40px;
         }
 
-        /* logo + name */
         .land-brand { display: flex; flex-direction: column; gap: 20px; }
         .land-logo-row { display: flex; align-items: center; gap: 12px; }
         .land-logo-icon {
           width: 36px; height: 36px;
-          border: 2px solid #2563eb;
+          border: 2px solid var(--primary);
           border-radius: 6px;
           display: grid; place-items: center;
           flex-shrink: 0;
@@ -55,49 +44,44 @@ export default function LandingPage() {
         .land-logo-icon::before {
           content: '';
           width: 14px; height: 14px;
-          border: 2px solid #2563eb;
+          border: 2px solid var(--primary);
           border-radius: 3px;
         }
         .land-logo-text {
           font-family: 'Space Mono', monospace;
           font-size: 13px; font-weight: 700;
-          color: #1e3a8a; letter-spacing: 1px;
+          color: var(--sidebar-bg); letter-spacing: 1px;
           text-transform: uppercase;
         }
 
-        .land-headline {
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
+        .land-headline { display: flex; flex-direction: column; gap: 10px; }
         .land-tag {
           font-family: 'Space Mono', monospace;
-          font-size: 10px; color: #2563eb;
+          font-size: 10px; color: var(--primary);
           letter-spacing: 2px; text-transform: uppercase;
           display: flex; align-items: center; gap: 8px;
         }
-        .land-tag::before { content: ''; width: 18px; height: 1px; background: #2563eb; }
+        .land-tag::before { content: ''; width: 18px; height: 1px; background: var(--primary); }
 
         .land-title {
           font-size: 42px; font-weight: 600;
-          color: #0f1f3d; line-height: 1.1;
+          color: var(--text-main); line-height: 1.1;
           letter-spacing: -1px;
         }
-        .land-title span { color: #2563eb; }
+        .land-title span { color: var(--primary); }
 
         .land-subtitle {
-          font-size: 15px; color: #6b7a99;
+          font-size: 15px; color: var(--text-muted);
           font-weight: 300; line-height: 1.6;
           max-width: 360px;
         }
 
-        /* actions */
         .land-actions { display: flex; flex-direction: column; gap: 10px; width: 100%; }
 
         .land-btn-primary {
           display: flex; align-items: center; justify-content: space-between;
           padding: 16px 20px;
-          background: #1e40af; color: #fff;
+          background: var(--primary-dark); color: #fff;
           border: none; border-radius: 10px;
           font-size: 15px; font-family: 'Space Grotesk', sans-serif;
           font-weight: 500; text-decoration: none;
@@ -121,10 +105,8 @@ export default function LandingPage() {
           transform: rotate(45deg) translate(-1px, 1px);
         }
 
-        .land-divider {
-          display: flex; align-items: center; gap: 12px;
-        }
-        .land-divider-line { flex: 1; height: 0.5px; background: rgba(37,99,235,0.12); }
+        .land-divider { display: flex; align-items: center; gap: 12px; }
+        .land-divider-line { flex: 1; height: 0.5px; background: var(--border-light); }
         .land-divider-text {
           font-family: 'Space Mono', monospace;
           font-size: 9px; color: #b0bed6;
@@ -134,16 +116,15 @@ export default function LandingPage() {
         .land-btn-secondary {
           display: flex; align-items: center; justify-content: center;
           padding: 13px 20px;
-          background: #fff; color: #2563eb;
-          border: 0.5px solid rgba(37,99,235,0.25);
+          background: #fff; color: var(--primary);
+          border: 0.5px solid var(--border-light);
           border-radius: 10px;
           font-size: 14px; font-family: 'Space Grotesk', sans-serif;
           font-weight: 500; text-decoration: none;
           transition: border-color 0.15s, background 0.15s;
         }
-        .land-btn-secondary:hover { border-color: #2563eb; background: rgba(37,99,235,0.03); }
+        .land-btn-secondary:hover { border-color: var(--primary); background: rgba(37,99,235,0.03); }
 
-        /* footer */
         .land-footer {
           font-family: 'Space Mono', monospace;
           font-size: 10px; color: #b0bed6;
