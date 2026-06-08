@@ -50,6 +50,12 @@ export default function ReportesPage() {
 
     setError("");
     setSuccess(false);
+    // Validar que exista al menos un filtro seleccionado
+    if (!filtros || !filtros.ordenar_por) {
+      setError("Debe seleccionar al menos un filtro");
+      return;
+    }
+
     setIsGenerating(true);
 
     try {

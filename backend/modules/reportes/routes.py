@@ -44,7 +44,14 @@ def generar_reporte():
     """Genera un reporte en PDF según el tipo solicitado"""
     data = request.get_json(silent=True) or {}
     tipo_reporte = (data.get("tipo") or "").strip()
-    filtros = data.get("filtros", {})
+    filtros = data.get("filtros", {}) or {}
+
+    # Eliminar filtros vacíos (ej. "") para evitar mensajes de valor vacío
+    filtros = {k: v for k, v in filtros.items() if v not in (None, "")}
+
+    # Requerir al menos un filtro válido para generar el reporte
+    if not filtros:
+        return jsonify({"error": "Debe proporcionar al menos un filtro válido"}), 400
 
     if tipo_reporte not in {"reporte_pagos", "reporte_morosos", "reporte_gastos"}:
         return jsonify({"error": "Tipo de reporte no válido"}), 400
